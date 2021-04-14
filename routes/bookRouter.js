@@ -1,28 +1,13 @@
 const express = require('express');
+const booksController = require('../Controller/booksController');
 
 function routes(Book) {
   const bookRouter = express.Router();
+  const controller = booksController(Book);
 
   bookRouter.route('/books')
-    .post((req, res) => {
-      const book = new Book(req.body);
-      book.save();
-      res.status(201).json(book);
-    })
-    .get((req, res) => {
-      /* Because of the empty array it returns when there's no query eg ?123= found,
-       we have to mk d query an empy object */
-      const query = {};
-      if (req.query.genre) {
-        query.genre = req.query.genre;
-      }
-      // Filtering with a query string, req provides 'query' method;
-
-      Book.find(query, (err, books) => {
-        if (err) { return res.send(err); }
-        return res.json(books);
-      });
-    });
+    .post(controller.post)
+    .get(controller.get);
 
   // Implement Middleware
   bookRouter.use('/books/:bookId', (req, res, next) => {
@@ -66,13 +51,13 @@ function routes(Book) {
       });
     })
     .delete((req, res) => {
-      req.book.remove(err => {
-        if (err){
+      req.book.remove((err) => {
+        if (err) {
           return res.send(err);
         }
         return res.sendStatus(204);
-      })
-    })
+      });
+    });
 
   return bookRouter;
 }
